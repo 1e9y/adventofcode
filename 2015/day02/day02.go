@@ -1,52 +1,40 @@
 package day02
 
 import (
-	"bufio"
-	"os"
-	"strconv"
 	"strings"
+
+	"github.com/1e9y/adventofcode/util"
 
 	"github.com/1e9y/adventofcode/challenge"
 )
 
-func min(a ...int) int {
-	m := a[0]
-	for _, n := range a {
-		if n < m {
-			m = n
-		}
-	}
-	return m
-}
-
-func A(input *challenge.Challenge) int {
-	return 0
-}
-
-func B(input *challenge.Challenge) int {
-	return 0
-}
-
 func wrapping(l, w, h int) int {
-	return 2*(l*w+w*h+h*l) + min(l*w, w*h, h*l)
+	return 2*(l*w+w*h+h*l) + util.MinInt(l*w, w*h, h*l)
 }
 
 func ribbon(l, w, h int) int {
-	return l*w*h + min(2*(l+w), 2*(w+h), 2*(h+l))
+	return l*w*h + util.MinInt(2*(l+w), 2*(w+h), 2*(h+l))
 }
 
-func chall1(input *os.File) (int, int) {
-	scanner := bufio.NewScanner(input)
-	sum := 0
-	rib := 0
-	for scanner.Scan() {
-		t := scanner.Text()
-		d := strings.Split(t, "x")
-		l, _ := strconv.Atoi(d[0])
-		w, _ := strconv.Atoi(d[1])
-		h, _ := strconv.Atoi(d[2])
-		sum += wrapping(l, w, h)
-		rib += ribbon(l, w, h)
+func parse(s string) (int, int, int) {
+	d := strings.Split(s, "x")
+	return util.MustAtoi(d[0]), util.MustAtoi(d[1]), util.MustAtoi(d[2])
+}
+
+func A(input *challenge.Challenge) int {
+	result := 0
+	for line := range input.Lines() {
+		l, w, h := parse(line)
+		result += wrapping(l, w, h)
 	}
-	return sum, rib
+	return result
+}
+
+func B(input *challenge.Challenge) int {
+	result := 0
+	for line := range input.Lines() {
+		l, w, h := parse(line)
+		result += ribbon(l, w, h)
+	}
+	return result
 }
