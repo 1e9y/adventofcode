@@ -5,8 +5,7 @@ import (
 )
 
 func stairs(input string) (int, int) {
-	f := 0
-	b := 0
+	var f, b int
 	for i, c := range input {
 		if c == '(' {
 			f++

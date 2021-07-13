@@ -70,7 +70,6 @@ func ReadChallengeFromFile() *Challenge {
 		}
 
 		path = filepath.Join(filepath.Dir(f), "input.txt")
-		println(f)
 	}
 
 	file, err := os.Open(path)
