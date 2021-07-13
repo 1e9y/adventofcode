@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/1e9y/adventofcode/challenge"
 	"github.com/1e9y/adventofcode/cmd"
 )
@@ -22,7 +20,5 @@ var solutions Solutions
 
 //go:generate go run ./gen
 func main() {
-	if err := cmd.NewRootCommand().Execute(); err != nil {
-		os.Exit(1)
-	}
+	cmd.Execute()
 }

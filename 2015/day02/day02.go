@@ -1,11 +1,12 @@
-package main
+package day02
 
 import (
 	"bufio"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/1e9y/adventofcode/challenge"
 )
 
 func min(a ...int) int {
@@ -16,6 +17,14 @@ func min(a ...int) int {
 		}
 	}
 	return m
+}
+
+func A(input *challenge.Challenge) int {
+	return 0
+}
+
+func B(input *challenge.Challenge) int {
+	return 0
 }
 
 func wrapping(l, w, h int) int {
@@ -40,15 +49,4 @@ func chall1(input *os.File) (int, int) {
 		rib += ribbon(l, w, h)
 	}
 	return sum, rib
-}
-
-func main() {
-	cwd, _ := os.Getwd()
-	file, err := os.Open(filepath.Join(cwd, "2015/day02/day02.input"))
-	defer file.Close()
-	if err != nil {
-		panic(err)
-	}
-	println(chall1(file))
-	//string(file)
 }

@@ -2,11 +2,16 @@ package challenge
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/1e9y/adventofcode/util"
+
+	"github.com/spf13/viper"
 )
 
 type Challenge struct {
@@ -37,22 +42,38 @@ func newChallengeFromReader(r io.Reader, c io.Closer) *Challenge {
 	return challenge
 }
 
-//func ReadChallengeForDay(day int) *Challenge {}
+func ReadChallengeForDay(year, day string) *Challenge {
+	path := viper.GetString("input")
+	if path == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
 
-func ReadChallengeFromFile(path string) *Challenge {
-	p := path
+		path = filepath.Join(wd, year, fmt.Sprintf("day%02d", util.MustAtoi(day)), "input.txt")
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return newChallengeFromReader(file, file)
+}
+
+func ReadChallengeFromFile() *Challenge {
+	path := viper.GetString("input")
 	if path == "" {
 		_, f, _, ok := runtime.Caller(1)
 		if !ok {
-			panic("failed to determine input path")
+			panic("failed to determine input path, provide it with -i explicitly")
 		}
 
-		p = filepath.Join(filepath.Dir(f), "input.txt")
+		path = filepath.Join(filepath.Dir(f), "input.txt")
 		println(f)
 	}
 
-	file, err := os.Open(p)
-	println(p)
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}

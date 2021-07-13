@@ -10,10 +10,10 @@ import (
 
 func TestA(t *testing.T) {
 	input := challenge.ReadChallengeFromFile("")
-	assert.Equal(t, a(input), 280)
+	assert.Equal(t, A(input), 280)
 }
 
 func TestB(t *testing.T) {
 	input := challenge.ReadChallengeFromFile("")
-	assert.Equal(t, b(input), 280)
+	assert.Equal(t, B(input), 280)
 }
