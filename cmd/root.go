@@ -3,6 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/1e9y/adventofcode/2015/day03"
+	"github.com/1e9y/adventofcode/2015/day04"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -21,9 +24,9 @@ func registerEvent2015(cmd *cobra.Command) {
 
 	registerPuzzle(event, "2015", "1", day01.A, day01.B)
 	registerPuzzle(event, "2015", "2", day02.A, day02.B)
+	registerPuzzle(event, "2015", "3", day03.A, day03.B)
+	registerPuzzle(event, "2015", "4", day04.A, day04.B)
 }
-
-//func registerEvent2016(cmd *cobra.Command) {}
 
 func registerPuzzle(cmd *cobra.Command, year, day string, A, B func(c *challenge.Challenge) int) {
 	puzzle := &cobra.Command{
