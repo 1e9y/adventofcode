@@ -3,29 +3,24 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/1e9y/adventofcode/2015/day03"
-	"github.com/1e9y/adventofcode/2015/day04"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/1e9y/adventofcode/2015/day01"
-	"github.com/1e9y/adventofcode/2015/day02"
 	"github.com/1e9y/adventofcode/challenge"
 )
 
-func registerEvent2015(cmd *cobra.Command) {
-	year := "2015"
+type Solution struct {
+	A func(c *challenge.Challenge) int
+	B func(c *challenge.Challenge) int
+}
+
+func registerEvent(cmd *cobra.Command, year string, puzzles func(event *cobra.Command)) {
 	event := &cobra.Command{
 		Use:   year,
-		Short: fmt.Sprintf("Advent of Code %d Puzzles", year),
+		Short: fmt.Sprintf("Advent of Code %s puzzles", year),
 	}
 	cmd.AddCommand(event)
-
-	registerPuzzle(event, "2015", "1", day01.A, day01.B)
-	registerPuzzle(event, "2015", "2", day02.A, day02.B)
-	registerPuzzle(event, "2015", "3", day03.A, day03.B)
-	registerPuzzle(event, "2015", "4", day04.A, day04.B)
+	puzzles(event)
 }
 
 func registerPuzzle(cmd *cobra.Command, year, day string, A, B func(c *challenge.Challenge) int) {
@@ -67,6 +62,7 @@ var root = &cobra.Command{
 
 func init() {
 	registerEvent2015(root)
+	registerEvent2021(root)
 
 	flags := root.PersistentFlags()
 	flags.StringP("input", "i", "", "Path to the puzzle input")
