@@ -12,3 +12,11 @@ func MustAtoi(a string) int {
 	}
 	return i
 }
+
+func MustParseInt(a string, base int) int {
+	i, err := strconv.ParseInt(a, base, 0)
+	if err != nil {
+		panic(fmt.Errorf("util.MustParseInt: %w", err))
+	}
+	return int(i)
+}
