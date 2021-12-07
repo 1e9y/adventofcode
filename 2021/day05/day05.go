@@ -8,88 +8,97 @@ import (
 	"github.com/1e9y/adventofcode/util"
 )
 
-var grid = make(map[int]int)
+type Line struct {
+	x1, y1, x2, y2         int
+	minX, minY, maxX, maxY int
+	len                    int
+}
 
-func lineFromString(input string) (result [4]int) {
+func newLineFromString(input string) Line {
 	parts := strings.Split(input, " -> ")
+	if len(parts) != 2 {
+		panic(fmt.Sprintf("bad input: %s", input))
+	}
 	start := strings.Split(parts[0], ",")
 	end := strings.Split(parts[1], ",")
-	result[0] = util.MustAtoi(start[0])
-	result[1] = util.MustAtoi(start[1])
-	result[2] = util.MustAtoi(end[0])
-	result[3] = util.MustAtoi(end[1])
-	return
-}
-
-func overlap(input <-chan string) (result int) {
-	for s := range input {
-		line := lineFromString(s)
-
-		maxX := util.MaxInt(line[0], line[2])
-		minX := util.MinInt(line[0], line[2])
-		maxY := util.MaxInt(line[1], line[3])
-		minY := util.MinInt(line[1], line[3])
-
-		if line[0] == line[2] || line[1] == line[3] {
-			for i := minX; i <= maxX; i++ {
-				for j := minY; j <= maxY; j++ {
-					grid[i*1000+j]++
-					if grid[i*1000+j] == 2 {
-						result++
-					}
-				}
-			}
-		}
+	if len(start) != 2 || len(end) != 2 {
+		panic(fmt.Sprintf("bad input: %s", input))
 	}
-	return
+
+	line := Line{
+		x1: util.MustAtoi(start[0]),
+		y1: util.MustAtoi(start[1]),
+		x2: util.MustAtoi(end[0]),
+		y2: util.MustAtoi(end[1]),
+	}
+
+	dx := util.AbsInt(line.x2 - line.x1)
+	dy := util.AbsInt(line.y2 - line.y1)
+	if (line.x1 != line.x2 && line.y1 != line.y2) && dx != dy {
+		panic(fmt.Sprintf("bad input: uneven slopes: %s", input))
+	}
+	line.len = dx
+
+	line.minX = util.MinInt(line.x1, line.x2)
+	line.minY = util.MinInt(line.y1, line.y2)
+	line.maxX = util.MaxInt(line.x1, line.x2)
+	line.maxY = util.MaxInt(line.y1, line.y2)
+
+	return line
 }
 
-func allOverlap(input <-chan string) (result int) {
+func xytoi(x, y int) int {
+	return 1000*x + y
+}
+
+func overlap(input <-chan string) (a, b int) {
+	var grid = make(map[int]*[2]int)
+
 	for s := range input {
-		line := lineFromString(s)
+		line := newLineFromString(s)
 
-		maxX := util.MaxInt(line[0], line[2])
-		minX := util.MinInt(line[0], line[2])
-		maxY := util.MaxInt(line[1], line[3])
-		minY := util.MinInt(line[1], line[3])
+		if line.x1 == line.x2 || line.y1 == line.y2 {
+			for i := line.minX; i <= line.maxX; i++ {
+				for j := line.minY; j <= line.maxY; j++ {
+					key := xytoi(i, j)
+					if grid[key] == nil {
+						grid[key] = new([2]int)
+					}
 
-		if line[0] == line[2] || line[1] == line[3] {
-			for i := minX; i <= maxX; i++ {
-				for j := minY; j <= maxY; j++ {
-					grid[i*1000+j]++
-					if grid[i*1000+j] == 2 {
-						result++
+					grid[key][0]++
+					if grid[key][0] == 2 {
+						a++
+					}
+					grid[key][1]++
+					if grid[key][1] == 2 {
+						b++
 					}
 				}
 			}
 		} else {
-			difx := util.AbsInt(line[0] - line[2])
-			dify := util.AbsInt(line[1] - line[3])
-			if difx != dify {
-				panic(fmt.Sprintf("bad input: %v", line))
-			}
-
-			sx := line[0]
-			sy := line[1]
-			ex := line[2]
-			ey := line[3]
 			var dx, dy int
-			if sx < ex {
+			if line.x1 < line.x2 {
 				dx = 1
 			} else {
 				dx = -1
 			}
-			if sy < ey {
+			if line.y1 < line.y2 {
 				dy = 1
 			} else {
 				dy = -1
 			}
 
-			// fmt.Println("line", line)
-			for i := 0; i <= difx; i++ {
-				grid[sx*1000+sy]++
-				if grid[sx*1000+sy] == 2 {
-					result++
+			sx := line.x1
+			sy := line.y1
+			for i := 0; i <= line.len; i++ {
+				key := xytoi(sx, sy)
+				if grid[key] == nil {
+					grid[key] = new([2]int)
+				}
+
+				grid[key][1]++
+				if grid[key][1] == 2 {
+					b++
 				}
 				sx += dx
 				sy += dy
@@ -100,9 +109,11 @@ func allOverlap(input <-chan string) (result int) {
 }
 
 func A(input *challenge.Challenge) int {
-	return overlap(input.Lines())
+	answer, _ := overlap(input.Lines())
+	return answer
 }
 
 func B(input *challenge.Challenge) int {
-	return allOverlap(input.Lines())
+	_, answer := overlap(input.Lines())
+	return answer
 }
