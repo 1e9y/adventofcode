@@ -94,3 +94,15 @@ func (c *Challenge) LineSlice() (result []string) {
 	}
 	return
 }
+
+func (c *Challenge) Matrix() (result [][]int) {
+	var row []int
+	for line := range c.lines {
+		row = make([]int, len(line))
+		for i, r := range line {
+			row[i] = util.MustAtoi(string(r))
+		}
+		result = append(result, row)
+	}
+	return
+}
