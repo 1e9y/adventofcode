@@ -1,0 +1,5 @@
+{
+    "files.autoSave": "off",
+    "go.testOnSave": false,
+    "go.testTimeout": "3s"
+}
