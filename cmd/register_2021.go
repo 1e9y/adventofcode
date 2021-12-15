@@ -16,6 +16,7 @@ import (
 	"github.com/1e9y/adventofcode/2021/day12"
 	"github.com/1e9y/adventofcode/2021/day13"
 	"github.com/1e9y/adventofcode/2021/day14"
+	"github.com/1e9y/adventofcode/2021/day15"
 )
 
 func registerEvent2021(cmd *cobra.Command) {
@@ -34,5 +35,6 @@ func registerEvent2021(cmd *cobra.Command) {
 		registerPuzzle(event, year, "12", day12.A, day12.B)
 		registerPuzzle(event, year, "13", day13.A, day13.B)
 		registerPuzzle(event, year, "14", day14.A, day14.B)
+		registerPuzzle(event, year, "15", day15.A, day15.B)
 	})
 }
