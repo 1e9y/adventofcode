@@ -58,9 +58,8 @@ start-RW`,
 }
 
 func TestPaths(t *testing.T) {
-	t.Skip()
 	for _, c := range testCases {
-		t.Run(c.input[:10], func(t *testing.T) {
+		t.Run(c.input[:12], func(t *testing.T) {
 			input := challenge.ReadChallengeFromLiteral(c.input)
 			assert.Equal(t, c.expect[0], A(input))
 		})
@@ -69,7 +68,7 @@ func TestPaths(t *testing.T) {
 
 func TestTwice(t *testing.T) {
 	for _, c := range testCases {
-		t.Run(c.input[:10], func(t *testing.T) {
+		t.Run(c.input[:12], func(t *testing.T) {
 			input := challenge.ReadChallengeFromLiteral(c.input)
 			assert.Equal(t, c.expect[1], B(input))
 		})
@@ -77,13 +76,11 @@ func TestTwice(t *testing.T) {
 }
 
 func TestA(t *testing.T) {
-	t.Skip()
 	input := challenge.ReadChallengeFromFile()
 	assert.Equal(t, 4970, A(input))
 }
 
 func TestB(t *testing.T) {
-	t.Skip()
 	input := challenge.ReadChallengeFromFile()
 	assert.Equal(t, 137948, B(input))
 }

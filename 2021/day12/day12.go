@@ -20,157 +20,136 @@ type Cave struct {
 	adjacent []*Cave
 }
 
-var start, end *Cave
-var index = make(map[string]*Cave)
-
-func caveSize(name string) CaveSize {
-	if name[0] >= 'A' && name[0] <= 'Z' {
-		return BigCave
-	}
-	return SmallCave
-}
-
-func parseCave(name string) *Cave {
-	cave := index[name]
+func parseCave(name string, index *map[string]*Cave) *Cave {
+	cave := (*index)[name]
 	if cave != nil {
 		return cave
 	}
+
+	size := SmallCave
+	if name[0] >= 'A' && name[0] <= 'Z' {
+		size = BigCave
+	}
+
 	cave = &Cave{
 		name:     name,
-		size:     caveSize(name),
+		size:     size,
 		adjacent: make([]*Cave, 0),
 	}
-	index[name] = cave
+	(*index)[name] = cave
 	if name == "start" {
-		start = cave
+		(*index)["start"] = cave
 	}
 	if name == "end" {
-		end = cave
+		(*index)["end"] = cave
 	}
 	return cave
 }
 
-func printPath(path []*Cave) {
-	res := make([]string, 0)
-	for _, p := range path {
-		res = append(res, p.name)
-	}
-	fmt.Println(strings.Join(res, ","))
+type Path struct {
+	route     []*Cave
+	caves     map[string]int
+	revisited bool
 }
 
-func pathHas(path []*Cave, cave *Cave) bool {
-	for _, c := range path {
-		if c.name == cave.name {
-			return true
-		}
+func newPath(cave *Cave) *Path {
+	return &Path{
+		route: []*Cave{cave},
+		caves: map[string]int{cave.name: 1},
 	}
-
-	return false
 }
 
-func canHave(path []*Cave, cave *Cave) bool {
-	if cave.size == BigCave {
-		return true
-	}
-	index := make(map[string]int)
-	hasTwo := 0
-	for _, c := range path {
-		index[c.name]++
-		if c.size == BigCave {
-			continue
-		}
-		if index[c.name] >= 2 {
-			// if hasTwo {
-			// return false
-			// }
-			hasTwo += 1
-			if hasTwo == 2 {
-				return false
-			}
-			// return false
-		}
+func (path Path) last() *Cave {
+	return path.route[len(path.route)-1]
+}
+
+func (path Path) append(cave *Cave) Path {
+	newRoute := []*Cave{}
+	newRoute = append(newRoute, path.route...)
+	newRoute = append(newRoute, cave)
+
+	newCaves := map[string]int{}
+	for k, v := range path.caves {
+		newCaves[k] = v
 	}
 
-	// if hasTwo || index[cave.name] >= 2 {
+	if cave.size == SmallCave {
+		newCaves[cave.name]++
+	}
+
+	newPath := Path{
+		route:     newRoute,
+		caves:     newCaves,
+		revisited: path.revisited,
+	}
+
+	if newPath.caves[cave.name] >= 2 {
+		newPath.revisited = true
+	}
+
+	return newPath
+}
+
+func (path Path) canHave(cave *Cave, allowRevisit bool) bool {
+	if path.caves[cave.name] >= 2 {
+		return false
+	}
+
+	if path.caves[cave.name] >= 1 && (allowRevisit && path.revisited || !allowRevisit) {
+		return false
+	}
 
 	return true
 }
 
-func paths(input []string) (result int) {
+func paths(input []string, allowRevisit bool) (result int) {
+	index := make(map[string]*Cave)
+
 	for _, line := range input {
 		parts := strings.Split(line, "-")
 		if len(parts) != 2 {
-			panic("bad input")
+			panic(fmt.Errorf("bad input: %s", line))
 		}
 
-		a := parseCave(parts[0])
-		b := parseCave(parts[1])
+		a := parseCave(parts[0], &index)
+		b := parseCave(parts[1], &index)
 		a.adjacent = append(a.adjacent, b)
 		b.adjacent = append(b.adjacent, a)
 	}
 
-	// fmt.Println(index)
+	start := index["start"]
+	end := index["end"]
 
-	completedPaths := make([][]*Cave, 0)
-	stack := make([][]*Cave, 0)
-	stack = append(stack, []*Cave{start})
+	stack := []Path{*newPath(start)}
 
 	for len(stack) > 0 {
-		// println("!", len(stack))
-		// for _, p := range stack {
-		// 	printPath(p)
-		// }
-		path := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		// path := stack[0]
-		// stack = stack[1:]
+		path := stack[0]
+		stack = stack[1:]
 
-		// printPath(path)
-		last := path[len(path)-1]
+		last := path.last()
 		if last == end {
-			// println("> done!")
-			completedPaths = append(completedPaths, path)
+			result++
 			continue
 		}
 
-		// print("+ ")
-		// printPath(last.adjacent)
-
-		for _, a := range last.adjacent {
-			if a == start {
+		for _, cave := range last.adjacent {
+			if cave == start {
 				continue
 			}
-			// if a.size == BigCave || !pathHas(path, a) {
 
-			// fmt.Printf("+ checking if path can have %v:\n", a.name)
-			// printPath(path)
-			if canHave(path, a) {
-				// println("+ YES")
-				// TODO: What was wrong with simple nextPath?
-				nextPath := make([]*Cave, 0)
-				nextPath = append(nextPath, path...)
-				nextPath = append(nextPath, a)
-				stack = append(stack, nextPath)
-				// fmt.Printf("= adding %v to %v\n", a.name, nextPath)
-				// fmt.Printf("= new stack\n")
-				// for _, p := range stack {
-				// 	printPath(p)
-				// }
-				// fmt.Printf("=\n")
+			if path.canHave(cave, allowRevisit) {
+				stack = append(stack, path.append(cave))
 			}
 		}
 	}
 
-	// for _, p := range completedPaths {
-	// 	printPath(p)
-	// }
-	return len(completedPaths)
+	return
 }
 
 func A(input *challenge.Challenge) int {
-	return paths(input.LineSlice())
+	return paths(input.LineSlice(), false)
 }
 
 func B(input *challenge.Challenge) int {
-	return paths(input.LineSlice())
+	return paths(input.LineSlice(), true)
 }
