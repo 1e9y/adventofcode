@@ -7,18 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// var testCases = []struct {
-// 	input  string
-// 	expect []int
-// }{
-// 	{
-// 		"target area: x=20..30, y=-10..-5",
-// 		[]int{45, 112},
-// 	},
-// }
-
-var testCasesStrings = []string{
-
+var testCasesString = []string{
 	"[[[99,[3,8]],5],1]",
 	"[1,2]",
 	"[[1,2],3]",
@@ -30,8 +19,7 @@ var testCasesStrings = []string{
 }
 
 func TestString(t *testing.T) {
-	// t.Skip()
-	for _, input := range testCasesStrings {
+	for _, input := range testCasesString {
 		t.Run(input, func(t *testing.T) {
 			number := newNumberFromInput(input)
 			assert.Equal(t, input, number.String())
@@ -43,69 +31,25 @@ var testCasesAddition = []struct {
 	input  []string
 	expect string
 }{
-	// {
-	// 	[]string{"[1,2]", "[[3,4],5]"},
-	// 	"[[1,2],[[3,4],5]]",
-	// },
-	// {
-	// 	[]string{"[[1,2],3]", "[9,[8,7]]"},
-	// 	"[[[1,2],3],[9,[8,7]]]",
-	// },
-	// {
-	// 	[]string{"[1,9]", "[8,5]"},
-	// 	"[[1,9],[8,5]]",
-	// },
-
-	/*
-		   [0
-		   	[1
-		   		[
-		   			[
-		   				4,
-		   				0
-		   			],
-		   			[
-		   				5,
-		   				0
-		   			]
-		   		],
-		   		[
-		   			[
-		   				[
-		   					4,
-							   5],
-		   				[2,6]
-		   			],
-		   			[9,5]
-		   		]
-		   	]
-		   	[
-		   		7,
-		   		[
-		   			[
-		   				[3,7],
-		   				[4,3]
-		   			],
-		   			[
-		   				[6,3],
-		   				[8,8]
-		   			]
-		   		]
-		   	]
-		   ]
-	*/
-
 	{
-		[]string{
-			"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]",
-			"[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]",
-		},
+		[]string{"[1,2]", "[[3,4],5]"},
+		"[[1,2],[[3,4],5]]",
+	},
+	{
+		[]string{"[[1,2],3]", "[9,[8,7]]"},
+		"[[[1,2],3],[9,[8,7]]]",
+	},
+	{
+		[]string{"[1,9]", "[8,5]"},
+		"[[1,9],[8,5]]",
+	},
+	{
+		[]string{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"},
 		"[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]",
 	},
 }
 
 func TestAddition(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesAddition {
 		t.Run(c.input[0], func(t *testing.T) {
 			assert.Equal(t,
@@ -131,11 +75,10 @@ var testCasesSplit = []struct {
 }
 
 func TestSplit(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesSplit {
 		t.Run(c.input, func(t *testing.T) {
 			number := newNumberFromInput(c.input)
-			_ = number.split()
+			number.split()
 			assert.Equal(t, c.expect, number.String())
 		})
 	}
@@ -172,11 +115,10 @@ var testCasesExplode = []struct {
 }
 
 func TestExplode(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesExplode {
 		t.Run(c.input, func(t *testing.T) {
 			number := newNumberFromInput(c.input)
-			_ = number.explode()
+			number.explode()
 			assert.Equal(t, c.expect, number.String())
 		})
 	}
@@ -187,40 +129,19 @@ var testCasesReduce = []struct {
 	expect string
 }{
 	{
-		[]string{
-			"[[[[4,3],4],4],[7,[[8,4],9]]]",
-			"[1,1]",
-		},
+		[]string{"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]"},
 		"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
 	},
 	{
-		[]string{
-			"[1,1]",
-			"[2,2]",
-			"[3,3]",
-			"[4,4]",
-		},
+		[]string{"[1,1]", "[2,2]", "[3,3]", "[4,4]"},
 		"[[[[1,1],[2,2]],[3,3]],[4,4]]",
 	},
 	{
-		[]string{
-			"[1,1]",
-			"[2,2]",
-			"[3,3]",
-			"[4,4]",
-			"[5,5]",
-		},
+		[]string{"[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]"},
 		"[[[[3,0],[5,3]],[4,4]],[5,5]]",
 	},
 	{
-		[]string{
-			"[1,1]",
-			"[2,2]",
-			"[3,3]",
-			"[4,4]",
-			"[5,5]",
-			"[6,6]",
-		},
+		[]string{"[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]", "[6,6]"},
 		"[[[[5,0],[7,4]],[5,5]],[6,6]]",
 	},
 	{
@@ -241,16 +162,13 @@ var testCasesReduce = []struct {
 }
 
 func TestReduce(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesReduce {
 		t.Run(c.input[0], func(t *testing.T) {
 			a := newNumberFromInput(c.input[0])
 			for _, s := range c.input[1:] {
 				b := newNumberFromInput(s)
 				a = add(a, b)
-				// a.reduce()
 			}
-			// a.reduce()
 			assert.Equal(t, c.expect, a.String())
 		})
 	}
@@ -260,10 +178,7 @@ var testCasesMagnitude = []struct {
 	input  string
 	expect int
 }{
-	{
-		"[9,1]", 29,
-	},
-
+	{"[9,1]", 29},
 	{"[[1,2],[[3,4],5]]", 143},
 	{"[[[[0,7],4],[[7,8],[6,0]]],[8,1]]", 1384},
 	{"[[[[1,1],[2,2]],[3,3]],[4,4]]", 445},
@@ -273,7 +188,6 @@ var testCasesMagnitude = []struct {
 }
 
 func TestMagnitude(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesMagnitude {
 		t.Run(c.input, func(t *testing.T) {
 			number := newNumberFromInput(c.input)
@@ -302,37 +216,24 @@ var testCasesHomework = []struct {
 }
 
 func TestHomework(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesHomework {
 		input := challenge.ReadChallengeFromLiteral(c.input)
 		assert.Equal(t, c.expect[0], A(input))
 	}
 }
 func TestSecondHomework(t *testing.T) {
-	// t.Skip()
 	for _, c := range testCasesHomework {
 		input := challenge.ReadChallengeFromLiteral(c.input)
 		assert.Equal(t, c.expect[1], B(input))
 	}
 }
 
-// func TestString(t *testing.T) {
-// 	for _, c := range testCasesStrings {
-// 		t.Run(c.input, func(t *testing.T) {
-// 			input := challenge.ReadChallengeFromLiteral(c.input)
-// 			assert.Equal(t, c.expect[0], A(input))
-// 		})
-// 	}
-// }
-
 func TestA(t *testing.T) {
-	// t.Skip()
 	input := challenge.ReadChallengeFromFile()
 	assert.Equal(t, 4132, A(input))
 }
 
 func TestB(t *testing.T) {
-	// t.Skip()
 	input := challenge.ReadChallengeFromFile()
 	assert.Equal(t, 4685, B(input))
 }

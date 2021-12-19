@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/1e9y/adventofcode/challenge"
 	"github.com/1e9y/adventofcode/util"
@@ -17,14 +18,7 @@ type Node struct {
 	depth       int
 }
 
-var plainNumberRe = regexp.MustCompile(`^\[(\d+),(\d+)\]$`)
-var singleNestLestNumberRe = regexp.MustCompile(`^\[(\[\d+,\d+\]),(\d+)\]$`)
-var singleNestRightNumberRe = regexp.MustCompile(`^\[(\d+),(\[\d+,\d+\])\]$`)
 var numberRe = regexp.MustCompile(`^\[[0-9,\[\]]+\]$`)
-
-func newNumberFromInput(input string) *Node {
-	return newNode(input, nil, 0)
-}
 
 func newNode(input string, parent *Node, depth int) (node *Node) {
 	if n, err := strconv.Atoi(input); err == nil {
@@ -37,43 +31,18 @@ func newNode(input string, parent *Node, depth int) (node *Node) {
 	}
 
 	if !numberRe.MatchString(input) {
-		panic(fmt.Errorf("bad input: not a number: %s", input))
+		panic(fmt.Errorf("bad input: not a snailfish number: %s", input))
 	}
 
-	if matches := plainNumberRe.FindStringSubmatch(input); matches != nil {
-		if len(matches) != 3 {
-			panic(fmt.Errorf("bad input: not a plain number:%s", input))
-		}
+	if input[1] != '[' {
+		i := strings.Index(input, ",")
 		node = &Node{
 			parent: parent,
 			depth:  depth,
 		}
-		node.left = newNode(matches[1], node, depth+1)
-		node.right = newNode(matches[2], node, depth+1)
-		return node
-	}
-	if matches := singleNestLestNumberRe.FindStringSubmatch(input); matches != nil {
-		if len(matches) != 3 {
-			panic(fmt.Errorf("bad input: not a plain number:%s", input))
-		}
-		node = &Node{
-			parent: parent,
-			depth:  depth,
-		}
-		node.left = newNode(matches[1], node, depth+1)
-		node.right = newNode(matches[2], node, depth+1)
-		return node
-	}
-	if matches := singleNestRightNumberRe.FindStringSubmatch(input); matches != nil {
-		if len(matches) != 3 {
-			panic(fmt.Errorf("bad input: not a plain number:%s", input))
-		}
-		node = &Node{
-			parent: parent,
-			depth:  depth,
-		}
-		node.left = newNode(matches[1], node, depth+1)
-		node.right = newNode(matches[2], node, depth+1)
+
+		node.left = newNode(input[1:i], node, depth+1)
+		node.right = newNode(input[i+1:len(input)-1], node, depth+1)
 		return node
 	}
 
@@ -100,19 +69,30 @@ func newNode(input string, parent *Node, depth int) (node *Node) {
 	panic(fmt.Errorf("bad input: %s", input))
 }
 
-func (node *Node) find(depth int) *Node {
+func newNumberFromInput(input string) *Node {
+	return newNode(input, nil, 0)
+}
+
+func (node Node) String() string {
+	if node.leaf {
+		return fmt.Sprintf("%d", node.value)
+	}
+	return fmt.Sprintf("[%s,%s]", node.left, node.right)
+}
+
+func (node *Node) findDepth(depth int) *Node {
 	if !node.leaf && node.depth == depth {
 		return node
 	}
 
 	if node.left != nil {
-		if n := node.left.find(depth); n != nil {
+		if n := node.left.findDepth(depth); n != nil {
 			return n
 		}
 	}
 
 	if node.right != nil {
-		if n := node.right.find(depth); n != nil {
+		if n := node.right.findDepth(depth); n != nil {
 			return n
 		}
 	}
@@ -120,91 +100,89 @@ func (node *Node) find(depth int) *Node {
 	return nil
 }
 
-func (node *Node) reduce() {
-	canExpl := true
-	canSplit := true
-	// fmt.Println(node)
-	for canExpl || canSplit {
-		for canExpl {
-			canExpl = (*node).explode()
-		}
-		// if canExpl {
-		// 	fmt.Println("exploded:")
-		// 	fmt.Println(node)
-		// }
-
-		canSplit = (*node).split()
-		// if canSplit {
-		// 	fmt.Println("splitted:")
-		// 	fmt.Println(node)
-		// }
-		canExpl = (*node).explode()
-		// canSplit = (*node).split()
+func (node *Node) findValueGreaterThan(n int) *Node {
+	if node.leaf && node.value >= n {
+		return node
 	}
+
+	if node.left != nil {
+		if n := node.left.findValueGreaterThan(n); n != nil {
+			return n
+		}
+	}
+
+	if node.right != nil {
+		if n := node.right.findValueGreaterThan(n); n != nil {
+			return n
+		}
+	}
+
+	return nil
+}
+
+func (node *Node) findLeft() *Node {
+	var base *Node
+	current := node
+	parent := current.parent
+	for parent != nil {
+		if parent.right == current {
+			base = parent
+			break
+		}
+		current = parent
+		parent = parent.parent
+	}
+
+	if base != nil {
+		base = base.left
+		for !base.leaf {
+			base = base.right
+		}
+	}
+
+	return base
+}
+
+func (node *Node) findRight() *Node {
+	var base *Node
+	current := node
+	parent := current.parent
+	for parent != nil {
+		if parent.left == current {
+			base = parent
+			break
+		}
+		current = parent
+		parent = parent.parent
+	}
+
+	if base != nil {
+		base = base.right
+		for !base.leaf {
+			base = base.left
+		}
+	}
+
+	return base
 }
 
 func (node *Node) explode() bool {
-	n := node.find(4)
-	// fmt.Printf("%s \n", n)
+	n := node.findDepth(4)
 
 	if n == nil {
 		return false
 	}
-	// find left
-	// =========
-	var root *Node
-	cur := n
-	par := cur.parent
-	// fmt.Println(cur, par)
-	for par != nil {
-		// fmt.Println(">>")
-		if par.right == cur {
-			root = par
-			break
-		}
 
-		cur = par
-		par = par.parent
+	leftNode := n.findLeft()
+	if leftNode != nil {
+		leftNode.value += n.left.value
 	}
 
-	// fmt.Println("Parent L")
-	// fmt.Println(root)
-	if root != nil {
-		root = root.left
-		for !root.leaf {
-			root = root.right
-		}
-		root.value += n.left.value
+	rightNode := n.findRight()
+	if rightNode != nil {
+		rightNode.value += n.right.value
 	}
 
-	// find right
-	// =========
-	root = nil
-	cur = n
-	par = cur.parent
-	// fmt.Println(cur, par)
-	for par != nil {
-		// fmt.Println(">>")
-		if par.left == cur {
-			root = par
-			break
-		}
-
-		cur = par
-		par = par.parent
-	}
-	// fmt.Println("Parent R")
-	// fmt.Println(root)
-	if root != nil {
-		root = root.right
-		for !root.leaf {
-			root = root.left
-		}
-		root.value += n.right.value
-	}
-	// fmt.Println(root)
-
-	// zero
 	*n = Node{
 		value:  0,
 		leaf:   true,
@@ -215,58 +193,49 @@ func (node *Node) explode() bool {
 	return true
 }
 
-func (node *Node) findGte(n int) *Node {
-	if node.leaf && node.value >= n {
-		return node
-	}
-
-	if node.left != nil {
-		if n := node.left.findGte(n); n != nil {
-			return n
-		}
-	}
-
-	if node.right != nil {
-		if n := node.right.findGte(n); n != nil {
-			return n
-		}
-	}
-
-	return nil
-}
-
 func (node Node) split() bool {
-	n := node.findGte(10)
+	n := node.findValueGreaterThan(10)
+
 	if n == nil {
 		return false
 	}
-	l := n.value / 2
-	r := l + n.value%2
+
+	leftValue := n.value / 2
+	rightValue := leftValue + n.value%2
+
 	*n = Node{
 		leaf:   false,
 		parent: n.parent,
 		depth:  n.depth,
 	}
+
 	n.left = &Node{
+		value:  leftValue,
 		leaf:   true,
-		value:  l,
 		parent: n,
 		depth:  n.depth + 1,
 	}
+
 	n.right = &Node{
+		value:  rightValue,
 		leaf:   true,
-		value:  r,
 		parent: n,
 		depth:  n.depth + 1,
 	}
+
 	return true
 }
 
-func (node Node) String() string {
-	if node.leaf {
-		return fmt.Sprintf("%d", node.value)
+func (node *Node) reduce() {
+	exploded := true
+	splitted := true
+	for exploded || splitted {
+		for exploded {
+			exploded = node.explode()
+		}
+		splitted = node.split()
+		exploded = node.explode()
 	}
-	return fmt.Sprintf("[%s,%s]", node.left, node.right)
 }
 
 func (node *Node) deepen() {
@@ -280,10 +249,6 @@ func (node *Node) deepen() {
 }
 
 func add(a, b *Node) (node *Node) {
-	// fmt.Println(a)
-	// fmt.Println("+")
-	// fmt.Println(b)
-
 	node = &Node{
 		left:   a,
 		right:  b,
@@ -296,9 +261,6 @@ func add(a, b *Node) (node *Node) {
 	node.left.deepen()
 	node.right.deepen()
 	node.reduce()
-
-	// fmt.Println("====")
-	// fmt.Println(node)
 	return
 }
 
