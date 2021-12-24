@@ -95,6 +95,10 @@ func (c *Challenge) LineSlice() (result []string) {
 	return
 }
 
+func (c *Challenge) String() (result string) {
+	return strings.Join(c.LineSlice(), "")
+}
+
 func (c *Challenge) Matrix() (result [][]int) {
 	var row []int
 	for line := range c.lines {
