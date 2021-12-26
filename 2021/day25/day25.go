@@ -1,36 +1,27 @@
 package day25
 
 import (
-	"fmt"
-
 	"github.com/1e9y/adventofcode/challenge"
 )
 
 const (
-	Empty = 0
-	Right = 1
-	Down  = 2
+	Empty    = 0
+	Right    = 1
+	Down     = 2
+	Both     = Right | Down
+	NextBoth = (Right << 2) | (Down << 2)
 )
 
-var symbolmap = map[int]string{
-	0: ".",
-	1: ">",
-	2: "v",
+var symbols = map[byte]int{
+	'.': Empty,
+	'>': Right,
+	'v': Down,
 }
 
-func render(sea [][][]rune) {
-	for j := 0; j < len(sea); j++ {
-		for i := 0; i < len(sea[0]); i++ {
-			fmt.Printf("%c", sea[j][i][0])
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-}
-
-func move(sea [][][]rune) bool {
+func move(sea [][]int) bool {
 	height := len(sea)
 	width := len(sea[0])
+
 	moved := false
 
 	for j := 0; j < height; j++ {
@@ -39,9 +30,10 @@ func move(sea [][][]rune) bool {
 			if i == width-1 {
 				next = 0
 			}
-			if sea[j][i][0] == '>' && sea[j][next][0] == '.' {
-				sea[j][next][1] = '>'
-				sea[j][i][1] = '.'
+			if sea[j][i]&Right != 0 && sea[j][next]&Both == 0 {
+				sea[j][next] = sea[j][next] &^ NextBoth
+				sea[j][next] = sea[j][next] | (Right << 2)
+				sea[j][i] = sea[j][i] &^ NextBoth
 				moved = true
 			}
 		}
@@ -49,7 +41,8 @@ func move(sea [][][]rune) bool {
 
 	for j := 0; j < height; j++ {
 		for i := 0; i < width; i++ {
-			sea[j][i][0] = sea[j][i][1]
+			sea[j][i] = sea[j][i] &^ Both
+			sea[j][i] = sea[j][i] | (sea[j][i] >> 2)
 		}
 	}
 
@@ -59,9 +52,10 @@ func move(sea [][][]rune) bool {
 			if j == height-1 {
 				next = 0
 			}
-			if sea[j][i][0] == 'v' && sea[next][i][0] == '.' {
-				sea[next][i][1] = 'v'
-				sea[j][i][1] = '.'
+			if sea[j][i]&Down != 0 && sea[next][i]&Both == 0 {
+				sea[next][i] = sea[next][i] &^ NextBoth
+				sea[next][i] = sea[next][i] | (Down << 2)
+				sea[j][i] = sea[j][i] &^ NextBoth
 				moved = true
 			}
 		}
@@ -69,42 +63,35 @@ func move(sea [][][]rune) bool {
 
 	for j := 0; j < height; j++ {
 		for i := 0; i < width; i++ {
-			sea[j][i][0] = sea[j][i][1]
+			sea[j][i] = sea[j][i] &^ Both
+			sea[j][i] = sea[j][i] | (sea[j][i] >> 2)
 		}
 	}
 
 	return moved
 }
 
-func simulate(sea [][][]rune) int {
-	// render(sea)
-	// for i := 0; i < 3; i++ {
-	// 	move(sea)
-	// 	println()
-	// 	render(sea)
-	// }
+func simulate(sea [][]int) int {
 	steps := 0
 	for move(sea) {
 		steps++
 	}
-	// println(steps + 1)
-	// println(Right << 2 & 0)
 	return steps + 1
 }
 
-func parseInput(input []string) [][][]rune {
+func parseInput(input []string) [][]int {
 	var width, height int
 	height = len(input)
 	width = len(input[0])
 
-	result := make([][][]rune, height)
+	result := make([][]int, height)
 	for i := 0; i < height; i++ {
-		result[i] = make([][]rune, width)
+		result[i] = make([]int, width)
 	}
 
 	for j := 0; j < height; j++ {
 		for i := 0; i < width; i++ {
-			result[j][i] = []rune{rune(input[j][i]), rune(input[j][i])}
+			result[j][i] = symbols[input[j][i]] | (symbols[input[j][i]] << 2)
 		}
 	}
 
@@ -116,5 +103,5 @@ func A(input *challenge.Challenge) int {
 }
 
 func B(input *challenge.Challenge) int {
-	return 1
+	return 2021
 }
