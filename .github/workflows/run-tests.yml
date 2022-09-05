@@ -3,7 +3,6 @@ name: Run Tests
 on: push
 
 jobs:
-  name: "Job Name"
   test:
     name: Test Solutions
     runs-on: ubuntu-latest
