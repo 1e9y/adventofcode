@@ -29,6 +29,6 @@ jobs:
           go-version: '^1.19.0'
 
       - name: Run unit tests
-        run:
+        run: go version
 
 
