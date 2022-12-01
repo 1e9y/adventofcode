@@ -63,6 +63,7 @@ var root = &cobra.Command{
 func init() {
 	registerEvent2015(root)
 	registerEvent2021(root)
+	registerEvent2022(root)
 
 	flags := root.PersistentFlags()
 	flags.StringP("input", "i", "", "Path to the puzzle input")
