@@ -38,3 +38,12 @@ func AbsInt(n int) int {
 	}
 	return n
 }
+
+func RightmostBit(n int) int {
+	i, p := 1, 0
+	for (i & n) == 0 {
+		i <<= 1
+		p++
+	}
+	return p
+}
