@@ -2,9 +2,10 @@ package day04
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/1e9y/adventofcode/challenge"
 	"github.com/1e9y/adventofcode/util"
-	"strings"
 )
 
 type assignment struct {
@@ -23,8 +24,7 @@ func (assignment assignment) contains(other assignment) bool {
 }
 
 func (assignment assignment) overlaps(other assignment) bool {
-	return assignment.start <= other.start && other.start <= assignment.end ||
-		assignment.start <= other.end && other.end <= assignment.end
+	return assignment.start <= other.end && assignment.end >= other.start
 }
 
 func parse(line string) (result [][]int) {
