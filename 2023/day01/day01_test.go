@@ -11,30 +11,38 @@ var testCases = []struct {
 	input  string
 	expect []int
 }{
-	{`1000
-2000
-3000
-
-4000
-
-5000
-6000
-
-7000
-8000
-9000
-
-10000`,
-		[]int{24000, 45000},
+	// 	{`1abc2
+	// pqr3stu8vwx
+	// a1b2c3d4e5f
+	// treb7uchet
+	// `,
+	// 		[]int{142, 142},
+	// },
+	{`two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen
+`,
+		[]int{281, 281},
 	},
 }
 
-func TestCalories(t *testing.T) {
+func TestCalibration(t *testing.T) {
 	for _, c := range testCases {
 		t.Run(c.input[:4], func(t *testing.T) {
 			input := challenge.ReadChallengeFromLiteral(c.input)
 			assert.Equal(t, c.expect[0], A(input))
-			input = challenge.ReadChallengeFromLiteral(c.input)
+		})
+	}
+}
+
+func TestTrueCalibration(t *testing.T) {
+	for _, c := range testCases {
+		t.Run(c.input[:4], func(t *testing.T) {
+			input := challenge.ReadChallengeFromLiteral(c.input)
 			assert.Equal(t, c.expect[1], B(input))
 		})
 	}
@@ -42,10 +50,10 @@ func TestCalories(t *testing.T) {
 
 func TestA(t *testing.T) {
 	input := challenge.ReadChallengeFromFile()
-	assert.Equal(t, 68292, A(input))
+	assert.Equal(t, 56465, A(input))
 }
 
 func TestB(t *testing.T) {
 	input := challenge.ReadChallengeFromFile()
-	assert.Equal(t, 203203, B(input))
+	assert.Equal(t, -1, B(input))
 }
