@@ -8,11 +8,11 @@ import (
 	"github.com/1e9y/adventofcode/util"
 )
 
-var pattern = regexp.MustCompile(`\d`)
+var patternNumeric = regexp.MustCompile(`\d`)
 
 func numeric(input string) int {
 	var a, b int
-	matches := pattern.FindAllString(input, -1)
+	matches := patternNumeric.FindAllString(input, -1)
 	if len(matches) < 1 {
 		panic(fmt.Sprintf("bad input: no number in string: %s", input))
 	}
@@ -25,6 +25,7 @@ func numeric(input string) int {
 	return a*10 + b
 }
 
+var patternAlphanumeric = regexp.MustCompile(`\d|one|two|three|four|five|six|seven|eight|nine`)
 var index = map[string]int{
 	"one":   1,
 	"two":   2,
@@ -39,47 +40,46 @@ var index = map[string]int{
 
 func alphanumeric(input string) int {
 	var a, b int
-	var pattern = regexp.MustCompile(`\d|one|two|three|four|five|six|seven|eight|nine`)
-	matches := pattern.FindAllString(input, -1)
 
-	if len(matches) < 1 {
+	match := patternAlphanumeric.FindString(input)
+	if match == "" {
 		panic(fmt.Sprintf("bad input: no number in string: %s", input))
 	}
 
-	if v, ok := index[matches[0]]; ok {
+	if v, ok := index[match]; ok {
 		a = v
 	} else {
-		a = util.MustAtoi(matches[0])
+		a = util.MustAtoi(match)
 	}
 
-	if len(matches) == 1 {
-		b = a
-	} else {
-		if v, ok := index[matches[len(matches)-1]]; ok {
+	var matchb string
+	for i := len(input) - 1; i >= 0; i-- {
+		matchb = patternAlphanumeric.FindString(input[i:])
+		if matchb == "" {
+			continue
+		}
+		if v, ok := index[matchb]; ok {
 			b = v
 		} else {
-			b = util.MustAtoi(matches[len(matches)-1])
+			b = util.MustAtoi(matchb)
 		}
+		break
 	}
-
-	fmt.Println(input, matches, a, b)
 
 	return a*10 + b
 }
 
-func calibration(input <-chan string) (sums []int) {
-	sums = make([]int, 2)
+func calibration(input <-chan string, value func(string) int) (sum int) {
 	for c := range input {
-		// sums[0] += numeric(c)
-		sums[1] += alphanumeric(c)
+		sum += value(c)
 	}
 	return
 }
 
 func A(input *challenge.Challenge) int {
-	return calibration(input.Lines())[0]
+	return calibration(input.Lines(), numeric)
 }
 
 func B(input *challenge.Challenge) int {
-	return calibration(input.Lines())[1]
+	return calibration(input.Lines(), alphanumeric)
 }

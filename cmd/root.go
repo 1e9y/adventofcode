@@ -64,6 +64,7 @@ func init() {
 	registerEvent2015(root)
 	registerEvent2021(root)
 	registerEvent2022(root)
+	registerEvent2023(root)
 
 	flags := root.PersistentFlags()
 	flags.StringP("input", "i", "", "Path to the puzzle input")
