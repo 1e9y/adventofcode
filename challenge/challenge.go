@@ -17,6 +17,8 @@ import (
 type Challenge struct {
 	scanner *bufio.Scanner
 	lines   chan string
+
+	separator string
 }
 
 func newChallengeFromReader(r io.Reader, c io.Closer) *Challenge {
@@ -99,11 +101,24 @@ func (c *Challenge) String() (result string) {
 	return strings.Join(c.LineSlice(), "")
 }
 
-func (c *Challenge) Matrix() (result [][]int) {
+type MatrixOpt func(c *Challenge)
+
+func WithSeparator(sep string) MatrixOpt {
+	return func(c *Challenge) {
+		c.separator = sep
+	}
+}
+
+func (c *Challenge) Matrix(opts ...MatrixOpt) (result [][]int) {
+	for _, opt := range opts {
+		opt(c)
+	}
+
 	var row []int
 	for line := range c.lines {
-		row = make([]int, len(line))
-		for i, r := range line {
+		arr := strings.Split(line, c.separator)
+		row = make([]int, len(arr))
+		for i, r := range arr {
 			row[i] = util.MustAtoi(string(r))
 		}
 		result = append(result, row)
